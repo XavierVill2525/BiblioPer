@@ -14,12 +14,12 @@ passport.use('local.signin', new LocalStrategy({
     const user = rows[0];
     const validPassword = await helpers.matchPassword(password, user.password)
     if (validPassword) {
-      done(null, user, req.flash('success', 'Welcome ' + user.username));
+      done(null, user, req.flash('success', 'Bienvenido ' + user.username));
     } else {
-      done(null, false, req.flash('message', 'Incorrect Password'));
+      done(null, false, req.flash('message', 'Usuario o Contraseña Incorrectos'));
     }
   } else {
-    return done(null, false, req.flash('message', 'The Username does not exists.'));
+    return done(null, false, req.flash('message', 'El usuario no existe'));
   }
 }));
 
@@ -29,17 +29,21 @@ passport.use('local.signup', new LocalStrategy({
   passReqToCallback: true
 }, async (req, username, password, done) => {
 
-  const { fullname } = req.body;
-  let newUser = {
-    fullname,
-    username,
-    password
-  };
-  newUser.password = await helpers.encryptPassword(password);
-  // Saving in the Database
-  const result = await pool.query('INSERT INTO users SET ? ', newUser);
-  newUser.id = result.insertId;
-  return done(null, newUser);
+  if (password.length >= 8) {
+    const { fullname } = req.body;
+    let newUser = {
+      fullname,
+      username,
+      password
+    };
+    newUser.password = await helpers.encryptPassword(password);
+    // Saving in the Database
+    const result = await pool.query('INSERT INTO users SET ? ', newUser);
+    newUser.id = result.insertId;
+    return done(null, newUser);
+  } else {
+    done(null, false, req.flash('message', 'La contraseña debe tener mas de 8 caracteres'));
+  }
 }));
 
 passport.serializeUser((user, done) => {
@@ -50,4 +54,5 @@ passport.deserializeUser(async (id, done) => {
   const rows = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
   done(null, rows[0]);
 });
+
 
