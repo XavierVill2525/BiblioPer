@@ -29,15 +29,24 @@ app.set('view engine', '.hbs');
 
 // Middlewares
 app.use(morgan('dev'));
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
+var expiryDate = new Date(Date.now() + 60 * 60 * 1000); //1hora
+app.set('trust proxy', 1);
 app.use(session({
   secret: 'faztmysqlnodemysql',
   resave: false,
   saveUninitialized: false,
-  store: new MySQLStore(database)
+  store: new MySQLStore(database),
+  //Control de Cookies
+  cookie: {
+    secure: true,
+    keys: ['key1', 'key2'],
+    expires: expiryDate,
+  },
 }));
+
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
@@ -61,5 +70,5 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Starting
 app.listen(app.get('port'), () => {
-  console.log('Server is in port', app.get('port'));
+  console.log('Server is in port http://localhost:', app.get('port'));
 });
