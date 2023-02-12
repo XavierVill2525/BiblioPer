@@ -3,7 +3,7 @@ module.exports = {
         if (req.isAuthenticated()) {
             return next();
         }
-        req.flash("message", "El usuario no existe");
+        req.flash("message", "Se debe logear primero");
         return res.redirect('/signin');
     }
 };
